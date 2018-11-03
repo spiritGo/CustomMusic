@@ -86,4 +86,9 @@ class Tools {
 
         return drawable;
     }
+
+    static int dpTopx(Context context,float dp){
+        float density = context.getResources().getDisplayMetrics().density;
+        return (int) (dp*density +.5);
+    }
 }

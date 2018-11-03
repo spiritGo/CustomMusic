@@ -1,21 +1,30 @@
 package com.example.sprite.custommusic.page2;
 
 import android.app.Activity;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
+import android.os.Environment;
+import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AbsListView;
 import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.example.sprite.custommusic.R;
 import com.example.sprite.custommusic.page1.utils.Tools;
 
+import org.reactivestreams.Subscriber;
+
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -110,6 +119,7 @@ public class SongListActivity extends Activity {
 
                             @Override
                             public void onSuccess(SongBean songBean) {
+
                                 try {
                                     MediaPlayer mediaPlayer = new MediaPlayer();
                                     mediaPlayer.reset();
@@ -166,6 +176,99 @@ public class SongListActivity extends Activity {
                                  int totalItemCount) {
                 lastVisibleItem = firstVisibleItem + visibleItemCount - 1;
                 allCount = totalItemCount;
+            }
+        });
+
+        lvSongList.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+            @Override
+            public boolean onItemLongClick(AdapterView<?> parent, View view, final int position,
+                                           long
+                                                   id) {
+
+                final PopupWindow popupWindow = new PopupWindow(SongListActivity.this);
+                View popView = View.inflate(getApplicationContext(), R.layout.item_pw, null);
+                final TextView tvDownload = popView.findViewById(R.id.tv_download);
+                popupWindow.setContentView(popView);
+                popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
+                popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
+                popupWindow.setFocusable(true);
+                popupWindow.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+                popupWindow.showAsDropDown(view, view.getWidth() - com.example.sprite.custommusic
+                        .page2.Tools.dpTopx(getApplicationContext(), 50), -view.getHeight() + com
+                        .example.sprite.custommusic.page2.Tools.dpTopx(getApplicationContext(),
+                                10));
+                tvDownload.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        popupWindow.dismiss();
+                        HttpTool.getInstance().downLoadMusic(Integer.parseInt(songListBeans.get
+                                (position).getSong_id()));
+                        HttpTool.getInstance().setSongBeanNetCallBack(new NetCallBack<SongBean>() {
+                            @Override
+                            public void onSuccess(final SongBean songBean) {
+                                String filePath = new File(Environment
+                                        .getExternalStorageDirectory(), songBean
+                                        .getSonginfo().getTitle() + ".mp3").getAbsolutePath();
+                                download(songBean.getBitrate().getFile_link(), filePath);
+                            }
+
+                            @Override
+                            public void onFailure(String message) {
+
+                            }
+                        });
+                    }
+                });
+                return true;
+            }
+        });
+    }
+
+    private void download(String path, String filePath) {
+        DownloadUtils downloadUtils = new DownloadUtils(new DownloadListenr() {
+            @Override
+            public void onstartDownload() {
+
+            }
+
+            @Override
+            public void onProgress(int progress) {
+                System.out.println("::" + progress);
+            }
+
+            @Override
+            public void onFinishDownload() {
+
+            }
+
+            @Override
+            public void onFail() {
+
+            }
+        });
+        downloadUtils.download(path, filePath);
+    }
+
+    //尝试，不用
+    private void downloadFromHttp(final TextView tvDownload, int position) {
+
+        HttpTool.getInstance().downLoadMusic(Integer.parseInt(songListBeans.get(position)
+                .getSong_id()));
+        HttpTool.getInstance().setSongBeanNetCallBack(new NetCallBack<SongBean>() {
+            @Override
+            public void onSuccess(final SongBean songBean) {
+                new Thread() {
+                    @Override
+                    public void run() {
+                        HttpTool.getInstance().downloadForHttp(songBean.getBitrate().getFile_link(),
+                                tvDownload);
+                    }
+                }.start();
+            }
+
+            @Override
+            public void onFailure(String message) {
+
             }
         });
     }

@@ -2,10 +2,17 @@ package com.example.sprite.custommusic.page2;
 
 import android.content.Context;
 import android.os.Build;
+import android.os.Environment;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.TextView;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
@@ -103,5 +110,43 @@ class HttpTool {
                 if (songBeanNetCallBack != null) songBeanNetCallBack.onFailure(t.getMessage());
             }
         });
+    }
+
+    void downloadForHttp(String path, final TextView tvDownload) {
+
+        try {
+            HttpURLConnection connection = (HttpURLConnection) new URL(path).openConnection();
+            connection.setRequestMethod("GET");
+            connection.setDoInput(true);
+            if (connection.getResponseCode() == 200) {
+                InputStream inputStream = connection.getInputStream();
+                int len = -1;
+                byte[] buffer = new byte[1024];
+                File musicFile = new File(Environment.getExternalStorageDirectory(), "musicFile" +
+                        ".mp3");
+                FileOutputStream fos = new FileOutputStream(musicFile);
+                long length = 0;
+                while ((len = inputStream.read(buffer)) != -1) {
+                    fos.write(buffer, 0, len);
+                    length += len;
+                    System.out.println(length);
+//                    tvDownload.post(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            tvDownload.setText(String.valueOf(finalLen));
+//                        }
+//                    });
+                }
+                fos.close();
+                inputStream.close();
+                System.out.println("ok!");
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    void downloadFromRetrofit(){
+
     }
 }

@@ -3,6 +3,8 @@
     package="com.example.sprite.custommusic">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -13,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".page3.RxJavaTest"
+            android:name=".page2.MVPTest2"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -24,8 +26,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".page1.activitys.MainActivity" />
+        <activity android:name=".page3.RxJavaTest" />
         <activity android:name=".page2.SongListActivity" />
-        <activity android:name=".page2.MVPTest2" />
     </application>
 
 </manifest>
