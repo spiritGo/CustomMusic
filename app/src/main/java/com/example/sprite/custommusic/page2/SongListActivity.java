@@ -7,7 +7,6 @@ import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.os.Environment;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsListView;
@@ -21,8 +20,6 @@ import android.widget.TextView;
 import com.bumptech.glide.Glide;
 import com.example.sprite.custommusic.R;
 import com.example.sprite.custommusic.page1.utils.Tools;
-
-import org.reactivestreams.Subscriber;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -40,6 +37,8 @@ public class SongListActivity extends Activity {
     private int size = 10;
     private int offset = 0;
     private boolean isLoading = true;
+    private TextView tvDownload;
+    private PopupWindow popupWindow;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -185,9 +184,9 @@ public class SongListActivity extends Activity {
                                            long
                                                    id) {
 
-                final PopupWindow popupWindow = new PopupWindow(SongListActivity.this);
+                popupWindow = new PopupWindow(SongListActivity.this);
                 View popView = View.inflate(getApplicationContext(), R.layout.item_pw, null);
-                final TextView tvDownload = popView.findViewById(R.id.tv_download);
+                tvDownload = popView.findViewById(R.id.tv_download);
                 popupWindow.setContentView(popView);
                 popupWindow.setWidth(ViewGroup.LayoutParams.WRAP_CONTENT);
                 popupWindow.setHeight(ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -200,7 +199,6 @@ public class SongListActivity extends Activity {
                 tvDownload.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        popupWindow.dismiss();
                         HttpTool.getInstance().downLoadMusic(Integer.parseInt(songListBeans.get
                                 (position).getSong_id()));
                         HttpTool.getInstance().setSongBeanNetCallBack(new NetCallBack<SongBean>() {
@@ -232,8 +230,18 @@ public class SongListActivity extends Activity {
             }
 
             @Override
-            public void onProgress(int progress) {
+            public void onProgress(final int progress) {
                 System.out.println("::" + progress);
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        tvDownload.setText(String.valueOf(progress));
+                        popupWindow.update();
+                        if (progress == 100) {
+                            popupWindow.dismiss();
+                        }
+                    }
+                });
             }
 
             @Override
